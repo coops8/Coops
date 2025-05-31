@@ -1,0 +1,154 @@
+📦 CoopsOS GitHub Pack — INITIATED
+
+=====================================
+
+This bundle includes:
+
+- README.md
+
+- .gitignore
+
+- version.json
+
+- make-version.sh
+
+- install_coops_os.sh
+
+- .github/workflows/release.yml
+
+- ota/build-ota.sh
+
+- ota/index.html (OTA Web Features)
+
+=== 1. README.md ===
+
+cat <<EOF > README.md
+
+🚀 CoopsOS
+
+A secure, customizable Android OS suite with OTA support, CoopsGPT integration, and layered security architecture. Built with ❤️ by Coops.
+
+🔧 Features
+
+Dev + Root key control system
+
+OTA build + updater
+
+CoopsGPT AI terminal
+
+Lockdown triggers, custom recovery, and more
+
+
+📦 Install
+
+bash install_coops_os.sh
+
+🔄 Update
+
+./make-version.sh patch
+./ota/build-ota.sh
+
+🤖 Built by: Coops
+
+EOF
+
+=== 2. .gitignore ===
+
+cat <<EOF > .gitignore output/ *.log *.bak *.zip pycache/ EOF
+
+=== 3. version.json ===
+
+cat <<EOF > version.json { "major": 1, "minor": 0, "patch": 0, "codename": "infinity-launch" } EOF
+
+=== 4. make-version.sh ===
+
+cat <<'EOF' > make-version.sh #!/bin/bash
+
+Usage: ./make-version.sh [patch|minor|major]
+
+ver_file="version.json" type="$1"
+
+jq -c '.' "$ver_file" > /dev/null || { echo "version.json missing or invalid"; exit 1; }
+
+major=$(jq '.major' "$ver_file") minor=$(jq '.minor' "$ver_file") patch=$(jq '.patch' "$ver_file") codename=$(jq -r '.codename' "$ver_file")
+
+case "$type" in patch) patch=$((patch+1));; minor) minor=$((minor+1)); patch=0;; major) major=$((major+1)); minor=0; patch=0;; *) echo "Usage: $0 [patch|minor|major]"; exit 1;; esac
+
+new_version="v${major}.${minor}.${patch}-coopsOS" echo "🔧 Updating version to $new_version"
+
+jq ".major = $major | .minor = $minor | .patch = $patch" "$ver_file" > tmp.json && mv tmp.json "$ver_file" echo "$new_version" > version.txt EOF chmod +x make-version.sh
+
+=== 5. install_coops_os.sh ===
+
+cat <<'EOF' > install_coops_os.sh #!/bin/bash echo "🛠️ Installing CoopsOS Suite..." mkdir -p ~/.coopsos/bin cp bin/* /.coopsos/bin' >> ~/.bashrc echo '✅ CoopsOS installed! Run coops to start.' EOF chmod +x install_coops_os.sh
+
+=== 6. .github/workflows/release.yml ===
+
+mkdir -p .github/workflows cat <<'EOF' > .github/workflows/release.yml name: Release CoopsOS OTA
+
+on: push: branches: [ "main" ]
+
+jobs: release: runs-on: ubuntu-latest steps: - uses: actions/checkout@v3 - name: Set up Python uses: actions/setup-python@v4 - name: Get version id: version run: | VERSION=$(cat version.txt) echo "::set-output name=tag::$VERSION"
+
+- name: Build OTA (simulated)
+    run: |
+      mkdir -p output
+      echo "CoopsOS OTA package" > output/ota-${{ steps.version.outputs.tag }}.zip
+
+  - name: Create Release
+    uses: softprops/action-gh-release@v1
+    with:
+      tag_name: ${{ steps.version.outputs.tag }}
+      name: Release ${{ steps.version.outputs.tag }}
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+  - name: Upload OTA Zip
+    uses: softprops/action-gh-release@v1
+    with:
+      files: output/ota-${{ steps.version.outputs.tag }}.zip
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+EOF
+
+=== 7. ota/build-ota.sh ===
+
+mkdir -p ota cat <<'EOF' > ota/build-ota.sh #!/bin/bash mkdir -p output ver=$(cat version.txt) echo "📦 Building OTA package for $ver..." zip -r output/ota-$ver.zip CoopsOS-Termux-Suite/ bin/ version.json version.txt EOF chmod +x ota/build-ota.sh
+
+=== 8. ota/index.html ===
+
+cat <<'EOF' > ota/index.html
+
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📲 CoopsOS OTA Updates</title>
+  <style>
+    body { font-family: sans-serif; background: #0f111a; color: #00ffe7; text-align: center; padding: 2em; }
+    a { color: #ffffff; font-weight: bold; }
+    .version { font-size: 1.5em; margin-top: 1em; }
+    .download { margin-top: 2em; padding: 1em; background: #1f222e; border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🔄 CoopsOS OTA Server</h1>
+  <p class="version">Latest Version: <strong id="version">Loading...</strong></p>
+  <div class="download">
+    <p><a id="download" href="#">⬇️ Download OTA ZIP</a></p>
+  </div>
+  <script>
+    fetch('../version.txt')
+      .then(res => res.text())
+      .then(ver => {
+        document.getElementById('version').innerText = ver;
+        document.getElementById('download').href = `../output/ota-${ver.trim()}.zip`;
+      });
+  </script>
+</body>
+</html>
+EOF=== Done! ===
+
+echo "✅ CoopsOS GitHub pack with OTA Web UI is READY." echo "Deploy index.html via GitHub Pages or Netlify for instant OTA dashboard." echo "Use ./make-version.sh patch && ./ota/build-ota.sh to refresh." echo "Fly high, Coops! 🚀📲"
+
