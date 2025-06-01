@@ -12,3 +12,10 @@ new updates and github push fixes
 
 ---
 
+
+## CoopsOS-v2025-05-26-6328 - 2025-06-01 15:31
+
+new commands and bug fixes!
+
+---
+
