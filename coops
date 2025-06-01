@@ -30,11 +30,11 @@ case "$1" in
     neofetch
     ;;
   deploy)
-    bash ~/CoopsOSRepo/deploy-release.sh
+    bash ~/Coops/deploy-release.sh
     ;;
   update)
     echo "Syncing latest CoopsOS Dev tools..." | lolcat
-    cd ~/CoopsOSRepo && git pull origin main
+    cd ~/Coops && git pull origin main
     ;;
   secure)
     echo "!!! DEVICE LOCKDOWN MODE ACTIVATED !!!" | lolcat
@@ -49,23 +49,23 @@ case "$1" in
     echo "Booting infinite ideas module..." | lolcat
     ;;
    release)
-    bash ~/CoopsOSRepo/push-release.sh
+    bash ~/Coops/push-release.sh
     ;;
   changelog)
-    bash ~/CoopsOSRepo/track-changelog.sh
+    bash ~/Coops/track-changelog.sh
     ;;
    version)
-    bash ~/CoopsOSRepo/make-version.sh "$2" "$3"
+    bash ~/Coops ~/make-version.sh "$2" "$3"
     ;;
    build)
-    bash ~/ CoopsOSRepo/rom-builder.sh
+    bash ~/ Coops/rom-builder.sh
     ;;
-rollback)
+   rollback)
   echo "Rolling back to previous version..." | lolcat
   PREV_TAG=$(git tag | tail -2 | head -1)
   git checkout "$PREV_TAG"
   ;;
-versions)
+   versions)
   git tag | sort -r | lolcat
   ;;
   *)

@@ -1,46 +1,35 @@
-#!/data/data/com.termux/files/usr/bin/bash
+#!/bin/bash
 
-VERSION_URL="https://raw.githubusercontent.com/coops8/CoopsOS-Termux-Suite/main/version.json"
-LOCAL_VERSION_FILE="$HOME/.coopsos_version"
+# === CONFIG ===
+LOCAL_VERSION="CoopsOS-v2025-05-26-6328"
+VERSION_FILE_URL="https://raw.githubusercontent.com/CoopsOS/ota/main/version.txt"
+OTA_PACKAGE_URL="https://raw.githubusercontent.com/CoopsOS/ota/main/update.zip"
+TMPDIR="${TMPDIR:-$HOME/tmp}"
+mkdir -p "$TMPDIR"
 
-function fetch_remote_version() {
-  curl -s "$VERSION_URL" -o /tmp/version.json
-  jq -r .version /tmp/version.json
-}
+echo "🌐 Checking for latest OTA..."
 
-function fetch_local_version() {
-  if [ -f "$LOCAL_VERSION_FILE" ]; then
-    cat "$LOCAL_VERSION_FILE"
-  else
-    echo "0.0.0"
-  fi
-}
+# Fetch latest version
+REMOTE_VERSION=$(curl -s "$VERSION_FILE_URL")
 
-function update_prompt() {
-  changelog=$(jq -r .changelog /tmp/version.json)
-  dialog --title "CoopsOS Update Available" \
-         --yesno "New Version Available:\n$remote_version\n\nChangelog:\n$changelog\n\nDo you want to update?" 15 50
-}
+if [[ "$REMOTE_VERSION" == *"<html>"* ]]; then
+  echo "❌ Failed to fetch OTA info. Check your URL or repo visibility."
+  exit 1
+fi
 
-function download_and_install() {
-  url=$(jq -r .download_url /tmp/version.json)
-  echo "Downloading from $url..." | lolcat
-  curl -L "$url" -o /sdcard/Download/CoopsOS_Update.zip
-  echo "$remote_version" > "$LOCAL_VERSION_FILE"
-  echo "Update downloaded to /sdcard/Download/CoopsOS_Update.zip"
-  echo "Flash it via recovery." | lolcat
-}
+echo "🔍 Local version: $LOCAL_VERSION"
+echo "🔍 Remote version: $REMOTE_VERSION"
 
-remote_version=$(fetch_remote_version)
-local_version=$(fetch_local_version)
-
-if [ "$remote_version" != "$local_version" ]; then
-  update_prompt
-  if [ $? -eq 0 ]; then
-    download_and_install
-  else
-    echo "Update canceled."
-  fi
+if [ "$REMOTE_VERSION" != "$LOCAL_VERSION" ]; then
+  echo "⬇️  New update found: $REMOTE_VERSION"
+  echo "📥 Downloading OTA package..."
+  curl -L -o "$TMPDIR/ota-update.zip" "$OTA_PACKAGE_URL"
+  
+  echo "📂 Extracting OTA..."
+  unzip -o "$TMPDIR/ota-update.zip" -d ~/Coops/
+  
+  echo "✅ OTA Update Applied!"
+  echo "💾 Please reboot the device for changes to take effect."
 else
-  echo "You already have the latest version: $local_version"
+  echo "✅ CoopsOS is already up to date."
 fi

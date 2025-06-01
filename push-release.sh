@@ -11,14 +11,13 @@ gh release create "$VERSION" "$OTA_ZIP" \
   --notes "$CHANGELOG"
 
 echo "Release published: $VERSION" | lolcat
-while true; do
-  cd ~/CoopsOSRepo && git pull origin main
-  sleep 3600
-done
+  cd ~/Coops && git pull origin main
+  sleep 1
+
 #!/data/data/com.termux/files/usr/bin/bash
 
 echo "🔼 Pushing updates to GitHub..." | lolcat
-cd ~/CoopsOSRepo || exit 1
+cd ~/Coops || exit 1
 git add .
 git commit -m "🚀 CoopsOS Auto Push: $(date)"
 git push origin main
